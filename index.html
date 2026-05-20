@@ -198,45 +198,34 @@
 
     /* Action row: D-Pad + PLAY btn + AB buttons */
     .action-row {
-      display:flex; gap:6px; align-items:center; justify-content:space-between;
+      display:flex; gap:6px; align-items:flex-end; justify-content:space-between; padding-bottom:2px;
     }
 
-    /* ── D-PAD ── */
+    /* ── D-PAD — 3 buttons only: left, down, right in a single row ── */
     .dpad {
-      display:grid;
-      grid-template-columns: 38px 38px 38px;
-      grid-template-rows: 34px 34px 34px;
-      gap:2px;
+      display:flex;
+      flex-direction:row;
+      gap:3px;
       flex-shrink:0;
+      align-self:flex-end;
+      margin-bottom:6px;
     }
-    .dpad-up    { grid-column:2; grid-row:1; }
-    .dpad-left  { grid-column:1; grid-row:2; }
-    .dpad-center{ grid-column:2; grid-row:2; }
-    .dpad-right { grid-column:3; grid-row:2; }
-    .dpad-down  { grid-column:2; grid-row:3; }
 
     .dpad-btn {
+      width:44px; height:44px;
       background: linear-gradient(145deg, #3a3a4a, #252530);
       border:none;
       color: #8888aa;
-      font-size:.9rem;
+      font-size:1.1rem;
       cursor:pointer;
       display:flex; align-items:center; justify-content:center;
       user-select:none;
       transition:all .08s;
       box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
     }
-    .dpad-up    { border-radius:6px 6px 2px 2px; }
-    .dpad-left  { border-radius:6px 2px 2px 6px; }
-    .dpad-right { border-radius:2px 6px 6px 2px; }
-    .dpad-down  { border-radius:2px 2px 6px 6px; }
-    .dpad-center {
-      border-radius:3px;
-      background: linear-gradient(145deg, #2e2e3e, #1e1e28);
-      color:#555566;
-      font-size:.55rem;
-      letter-spacing:.05em;
-    }
+    .dpad-left  { border-radius:8px 3px 3px 8px; }
+    .dpad-right { border-radius:3px 8px 8px 3px; }
+    .dpad-down  { border-radius:5px; }
 
     .dpad-btn:active {
       background: linear-gradient(145deg, #222230, #181820);
@@ -245,81 +234,62 @@
       color:#aaaacc;
     }
 
-    /* ── SELECT / START ── */
-    .gb-meta-btns {
-      display:flex; gap:12px; align-items:center; justify-content:center;
-      flex:1;
-    }
-    .gb-meta-btn {
-      display:flex; flex-direction:column; align-items:center; gap:3px;
-      cursor:pointer; background:none; border:none;
-    }
-    .gb-meta-pill {
-      width:34px; height:13px;
-      border-radius:7px;
-      background: linear-gradient(180deg, #555566 0%, #3a3a4a 100%);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
-      transition:all .1s;
-    }
-    .gb-meta-btn:active .gb-meta-pill {
-      background: linear-gradient(180deg, #333340 0%, #222230 100%);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.6);
-      transform:scale(.95);
-    }
-    .gb-meta-label {
-      font-size:.4rem; letter-spacing:.15em; color:#5a5a46; text-transform:uppercase; font-family:var(--font-m);
-    }
-
-    /* ── PLAY BUTTON (large center) ── */
+    /* ── PLAY BUTTON — green, prominent ── */
     #play-btn {
-      flex:1; max-width:110px;
-      padding:10px 8px; border-radius:10px; border:none;
-      background: linear-gradient(180deg, #fff 0%, #e8e8e0 100%);
-      color:#1a1a2a;
-      font-family:var(--font-d); font-size:1rem;
-      font-weight:600; letter-spacing:.12em; cursor:pointer; transition:all .15s;
+      width:100%; max-width:130px;
+      padding:13px 8px; border-radius:12px; border:none;
+      background: linear-gradient(180deg, #44dd77 0%, #22aa55 60%, #188840 100%);
+      color:#fff;
+      font-family:var(--font-d); font-size:1.15rem;
+      font-weight:600; letter-spacing:.14em; cursor:pointer; transition:all .15s;
       text-transform:uppercase;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.9);
+      box-shadow: 0 4px 10px rgba(0,180,80,0.45), inset 0 1px 0 rgba(255,255,255,0.4), 0 0 0 1px #116633;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+      margin-top:4px;
     }
-    #play-btn:disabled { background:linear-gradient(180deg, #aaa 0%, #888 100%); color:#666; cursor:not-allowed; box-shadow:none; }
-    #play-btn:active:not(:disabled) { transform:scale(.96); box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+    #play-btn:disabled { background:linear-gradient(180deg, #777 0%, #555 100%); color:#999; cursor:not-allowed; box-shadow:none; text-shadow:none; }
+    #play-btn:active:not(:disabled) { transform:scale(.96); box-shadow:0 2px 5px rgba(0,150,60,0.4); }
 
-    /* ── AB BUTTONS ── */
+    /* ── AB BUTTONS — larger, shifted left ── */
     .gb-ab-buttons {
-      display:flex; flex-direction:column; align-items:center; gap:6px;
       flex-shrink:0;
       position:relative;
-      width:90px; height:90px;
+      width:106px; height:106px;
+      margin-right:8px;
     }
 
-    /* Diagonal layout: B top-left, A bottom-right */
+    /* B = top-left (purple) = DROP | A = bottom-right (red) = ROTATE */
     .gb-btn-a, .gb-btn-b {
       position:absolute;
-      width:38px; height:38px; border-radius:50%; border:none;
-      cursor:pointer; font-family:var(--font-m); font-size:.7rem; font-weight:700;
-      color:rgba(255,255,255,0.9); letter-spacing:.05em;
+      width:48px; height:48px; border-radius:50%; border:none;
+      cursor:pointer; font-family:var(--font-m); font-weight:700;
+      color:rgba(255,255,255,0.95); letter-spacing:.03em;
       transition:all .08s;
-      display:flex; align-items:center; justify-content:center;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:1px;
+    }
+    .gb-btn-letter { font-size:.75rem; line-height:1; }
+    .gb-btn-sub    { font-size:.38rem; letter-spacing:.06em; opacity:.8; line-height:1; }
+
+    .gb-btn-b {
+      top:0; left:0;
+      background: radial-gradient(circle at 35% 35%, #aa55dd, #7722bb);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 0 2px #5511aa;
     }
     .gb-btn-a {
       bottom:0; right:0;
-      background: radial-gradient(circle at 35% 35%, #cc3366, #882244);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 0 2px #661133;
-    }
-    .gb-btn-b {
-      top:0; left:0;
-      background: radial-gradient(circle at 35% 35%, #9944cc, #662299);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 0 2px #441177;
-    }
-    .gb-btn-a:active {
-      background: radial-gradient(circle at 35% 35%, #aa2244, #661133);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
-      transform:scale(.92) translateY(2px);
+      background: radial-gradient(circle at 35% 35%, #dd3366, #991133);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 0 2px #770022;
     }
     .gb-btn-b:active {
-      background: radial-gradient(circle at 35% 35%, #7733aa, #441177);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
-      transform:scale(.92) translateY(2px);
+      background: radial-gradient(circle at 35% 35%, #8833aa, #551199);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
+      transform:scale(.91) translateY(2px);
+    }
+    .gb-btn-a:active {
+      background: radial-gradient(circle at 35% 35%, #bb1144, #770022);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
+      transform:scale(.91) translateY(2px);
     }
 
     /* Status row */
@@ -382,10 +352,7 @@
     .btn-flag{font-size:1.1rem;line-height:1;}
     .cur-symbol{font-weight:700;color:var(--silver);min-width:20px;}
 
-    /* AB labels */
-    .gb-ab-label { font-size:.38rem; letter-spacing:.12em; color:#5a5a46; text-transform:uppercase; font-family:var(--font-m); position:absolute; }
-    .label-b { top:42px; left:2px; }
-    .label-a { bottom:42px; right:2px; }
+
   </style>
 </head>
 <body>
@@ -499,40 +466,32 @@
     <div class="chip-row" id="chip-row"></div>
     <div class="action-row">
 
-      <!-- D-Pad -->
+      <!-- D-Pad: left, down, right only -->
       <div class="dpad">
-        <button class="dpad-btn dpad-up"    onclick="gameRotate()">↺</button>
         <button class="dpad-btn dpad-left"  onclick="gameLeft()">◀</button>
-        <div    class="dpad-btn dpad-center"></div>
-        <button class="dpad-btn dpad-right" onclick="gameRight()">▶</button>
         <button class="dpad-btn dpad-down"  onpointerdown="startDrop()" onpointerup="stopDrop()" onpointerleave="stopDrop()">▼</button>
+        <button class="dpad-btn dpad-right" onclick="gameRight()">▶</button>
       </div>
 
-      <!-- Center: SELECT + PLAY + START -->
-      <div style="display:flex;flex-direction:column;gap:5px;align-items:center;flex:1;">
-        <div class="gb-meta-btns">
-          <button class="gb-meta-btn" onclick="openMenu()">
-            <div class="gb-meta-pill"></div>
-            <span class="gb-meta-label">SELECT</span>
-          </button>
-          <button class="gb-meta-btn" onclick="startRound()">
-            <div class="gb-meta-pill"></div>
-            <span class="gb-meta-label">START</span>
-          </button>
-        </div>
+      <!-- Center: PLAY button + status -->
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex:1;padding-bottom:2px;">
         <button id="play-btn" onclick="startRound()" data-i18n="play">JOUER</button>
         <div class="status-row" style="width:100%;">
-          <div id="status-msg" data-i18n="chooseBet" style="font-size:.5rem;color:#5a5a46;">Choisissez une mise</div>
-          <div id="pot-msg" style="font-size:.5rem;color:#6a6a56;"></div>
+          <div id="status-msg" data-i18n="chooseBet" style="font-size:.48rem;color:#5a5a46;text-align:center;width:100%;">Choisissez une mise</div>
         </div>
+        <div id="pot-msg" style="font-size:.48rem;color:#6a6a56;"></div>
       </div>
 
-      <!-- A/B Buttons -->
+      <!-- A/B Buttons: B=DROP (purple), A=ROTATE (red) -->
       <div class="gb-ab-buttons">
-        <button class="gb-btn-b" onclick="gameRotate()" title="Rotate">B</button>
-        <button class="gb-btn-a" onpointerdown="hardDrop()" title="Hard Drop">A</button>
-        <span class="gb-ab-label label-b">ROT.</span>
-        <span class="gb-ab-label label-a">DROP</span>
+        <button class="gb-btn-b" onpointerdown="startDrop()" onpointerup="stopDrop()" onpointerleave="stopDrop()" title="Drop">
+          <span class="gb-btn-letter">B</span>
+          <span class="gb-btn-sub">DROP</span>
+        </button>
+        <button class="gb-btn-a" onclick="gameRotate()" title="Rotate">
+          <span class="gb-btn-letter">A</span>
+          <span class="gb-btn-sub">ROT.</span>
+        </button>
       </div>
 
     </div>
@@ -594,7 +553,7 @@ let dropSpeed      = 600;
 let fastDrop       = false;
 let scoreMultiplier = 1;
 let slowActive     = false;
-let soundEnabled   = false;
+let soundEnabled   = true;
 let currentLang     = localStorage.getItem('symetry_lang')     || 'fr';
 let currentCurrency = localStorage.getItem('symetry_currency') || 'USD';
 
@@ -1355,6 +1314,10 @@ function beginGame() {
   document.getElementById('game').style.display = 'flex';
   buildMenu();
   buildChips();
+  // Sound on by default
+  const st = document.getElementById('sound-toggle');
+  if (st) { st.checked = true; }
+  document.getElementById('sound-label').textContent = 'Activé';
   setTimeout(() => {
     initCanvas();
     drawBoard();
