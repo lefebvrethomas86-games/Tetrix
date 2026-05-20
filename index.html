@@ -179,13 +179,13 @@
 
     /* ══ CONTROLS — Game Boy Style ══ */
     .controls {
-      flex-shrink:0; padding:6px 10px 8px; border-top:1px solid var(--border);
+      flex-shrink:0; padding:6px 10px 10px; border-top:1px solid var(--border);
       background: linear-gradient(180deg, #c8c8b4 0%, #bcbca8 100%);
-      display:flex; flex-direction:column; gap:5px;
+      display:flex; flex-direction:column; gap:0;
     }
 
-    /* Chip row stays dark themed on the light bg */
-    .chip-row { display:flex; gap:4px; flex-wrap:wrap; padding:0 2px; }
+    /* Chip row */
+    .chip-row { display:flex; gap:4px; flex-wrap:wrap; padding:0 2px 6px 2px; }
     .chip-btn {
       padding:4px 8px; border-radius:20px;
       border:1px solid #9a9a86;
@@ -196,19 +196,20 @@
     .chip-btn.active { background:#3a3a2e; color:#d4d4c0; border-color:#3a3a2e; }
     .chip-btn:active { transform:scale(.95); }
 
-    /* Action row: D-Pad + PLAY btn + AB buttons */
+    /* Top row: D-Pad left + AB buttons right — arrows at top */
     .action-row {
-      display:flex; gap:6px; align-items:flex-end; justify-content:space-between; padding-bottom:2px;
+      display:flex; gap:6px; align-items:flex-start; justify-content:space-between;
+      padding-bottom:0;
     }
 
-    /* ── D-PAD — 3 buttons only: left, down, right in a single row ── */
+    /* ── D-PAD — 3 buttons in a single row, pushed to top ── */
     .dpad {
       display:flex;
       flex-direction:row;
       gap:3px;
       flex-shrink:0;
-      align-self:flex-end;
-      margin-bottom:6px;
+      align-self:flex-start;
+      margin-top:2px;
     }
 
     .dpad-btn {
@@ -250,12 +251,14 @@
     #play-btn:disabled { background:linear-gradient(180deg, #777 0%, #555 100%); color:#999; cursor:not-allowed; box-shadow:none; text-shadow:none; }
     #play-btn:active:not(:disabled) { transform:scale(.96); box-shadow:0 2px 5px rgba(0,150,60,0.4); }
 
-    /* ── AB BUTTONS — larger, shifted left ── */
+    /* ── AB BUTTONS — larger, shifted left, top aligned ── */
     .gb-ab-buttons {
       flex-shrink:0;
       position:relative;
       width:106px; height:106px;
       margin-right:8px;
+      align-self:flex-start;
+      margin-top:2px;
     }
 
     /* B = top-left (purple) = DROP | A = bottom-right (red) = ROTATE */
@@ -473,13 +476,11 @@
         <button class="dpad-btn dpad-right" onclick="gameRight()">▶</button>
       </div>
 
-      <!-- Center: PLAY button + status -->
-      <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex:1;padding-bottom:2px;">
-        <button id="play-btn" onclick="startRound()" data-i18n="play">JOUER</button>
-        <div class="status-row" style="width:100%;">
-          <div id="status-msg" data-i18n="chooseBet" style="font-size:.48rem;color:#5a5a46;text-align:center;width:100%;">Choisissez une mise</div>
-        </div>
+      <!-- Center: PLAY button pushed to bottom -->
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:center;flex:1;justify-content:flex-end;padding-bottom:2px;">
+        <div id="status-msg" data-i18n="chooseBet" style="font-size:.48rem;color:#5a5a46;text-align:center;width:100%;">Choisissez une mise</div>
         <div id="pot-msg" style="font-size:.48rem;color:#6a6a56;"></div>
+        <button id="play-btn" onclick="startRound()" data-i18n="play">JOUER</button>
       </div>
 
       <!-- A/B Buttons: B=DROP (purple), A=ROTATE (red) -->
@@ -875,6 +876,7 @@ function startRound() {
   startTimer();
   spawnPiece();
   drawBoard();
+  unlockAudio();
   startMusic();
 }
 
@@ -1041,178 +1043,165 @@ function spawnParticles(win) {
   }
 }
 
-// ═══════════════════════════════════
-// AUDIO — Korobeiniki melody (Tetris theme A)
-// ═══════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// AUDIO — Korobeiniki (Tetris Theme A) — accurate chiptune
+// ═══════════════════════════════════════════════════════════
 let audioCtx = null, musicPlaying = false, musicScheduler = null;
-
-// Note frequencies (Hz). MIDI offset from A4=440
-function midiToHz(n) { return 440 * Math.pow(2, (n - 69) / 12); }
-
-// Korobeiniki — Theme A transcription
-// Notes as [midiNote, durationBeats] where 1 beat = one quarter note
-// Tempo: 160 BPM → beat = 0.375s
-const TEMPO_BPM = 160;
-const BEAT = 60 / TEMPO_BPM;
-
-// Full Theme A melody sequence (MIDI note numbers)
-// E5 B4 C5 D5 C5 B4 A4 A4 C5 E5 D5 C5 B4 C5 D5 E5 C5 A4 A4
-// then counter-melody section, then repeats
-const MELODY = [
-  // Phrase 1
-  [76,1],[71,.5],[72,.5],[74,1],[72,.5],[71,.5],
-  [69,1],[69,.5],[72,.5],[76,1],[74,.5],[72,.5],
-  [71,1.5],[72,.5],[74,1],[76,1],
-  [72,1],[69,1],[69,2],
-
-  // Phrase 2 (lower entry)
-  [74,1.5],[77,.5],[81,1],[79,.5],[77,.5],
-  [76,1],[72,.5],[76,.5],[74,1],[72,.5],[71,.5],[71,1],
-  // wait
-  [72,.5],[74,1],[76,1],
-  [72,1],[69,1],[69,2],
-
-  // Phrase 3 (same as 1)
-  [76,1],[71,.5],[72,.5],[74,1],[72,.5],[71,.5],
-  [69,1],[69,.5],[72,.5],[76,1],[74,.5],[72,.5],
-  [71,1.5],[72,.5],[74,1],[76,1],
-  [72,1],[69,1],[69,2],
-
-  // Phrase 4
-  [74,1.5],[77,.5],[81,1],[79,.5],[77,.5],
-  [76,1],[72,.5],[76,.5],[74,1],[72,.5],[71,.5],[71,1],
-  [72,.5],[74,1],[76,1],
-  [72,1],[69,1],[69,2],
-];
-
-// Bass line that accompanies
-const BASS = [
-  // Each entry: [note, beats]
-  [52,2],[55,2],[53,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-  [52,2],[55,2],[53,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-
-  [50,2],[53,2],[52,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-  [50,2],[53,2],[52,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-
-  [52,2],[55,2],[53,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-  [52,2],[55,2],[53,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-
-  [50,2],[53,2],[52,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-  [50,2],[53,2],[52,2],[55,2],
-  [52,2],[55,2],[57,2],[55,2],
-];
+let audioUnlocked = false;
 
 function getACtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   return audioCtx;
 }
 
-function scheduleNote(ctx, freq, startTime, duration, volume, type, attack, release) {
-  const osc = ctx.createOscillator();
+// Unlock AudioContext on first user interaction (required by browsers)
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  const ctx = getACtx();
+  // Resume if suspended (autoplay policy)
+  if (ctx.state === 'suspended') ctx.resume();
+  // Play a silent buffer to fully unlock
+  const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start(0);
+  document.removeEventListener('pointerdown', unlockAudio);
+  document.removeEventListener('keydown', unlockAudio);
+}
+document.addEventListener('pointerdown', unlockAudio, { once: true });
+document.addEventListener('keydown', unlockAudio, { once: true });
+
+// ── Pitch helpers ──
+const hz  = n  => 440 * Math.pow(2, (n - 69) / 12);  // MIDI → Hz
+const BPM = 150;
+const Q   = 60 / BPM;      // quarter note (s)
+const E   = Q / 2;          // eighth note
+const DQ  = Q * 1.5;        // dotted quarter
+const H   = Q * 2;          // half note
+
+// ── Korobeiniki Theme A — precise sequence ──
+// [MIDI note, duration in seconds]  (note 0 = rest / silence)
+const MELODY = [
+  // ——— Phrase 1 ———
+  [76,Q ],[71,E ],[72,E ],[74,Q ],[72,E ],[71,E ],
+  [69,Q ],[69,E ],[72,E ],[76,Q ],[74,E ],[72,E ],
+  [71,DQ],[72,E ],[74,Q ],[76,Q ],
+  [72,Q ],[69,Q ],[69,H ],
+
+  // ——— Phrase 2 ———
+  [74,DQ],[77,E ],[81,Q ],[79,E ],[77,E ],
+  [76,Q ],[72,E ],[76,E ],[74,Q ],[72,E ],[71,E ],[71,Q ],
+  [0, E ],[72,E ],[74,Q ],[76,Q ],
+  [72,Q ],[69,Q ],[69,H ],
+
+  // ——— Phrase 1 repeat ———
+  [76,Q ],[71,E ],[72,E ],[74,Q ],[72,E ],[71,E ],
+  [69,Q ],[69,E ],[72,E ],[76,Q ],[74,E ],[72,E ],
+  [71,DQ],[72,E ],[74,Q ],[76,Q ],
+  [72,Q ],[69,Q ],[69,H ],
+
+  // ——— Phrase 2 repeat ———
+  [74,DQ],[77,E ],[81,Q ],[79,E ],[77,E ],
+  [76,Q ],[72,E ],[76,E ],[74,Q ],[72,E ],[71,E ],[71,Q ],
+  [0, E ],[72,E ],[74,Q ],[76,Q ],
+  [72,Q ],[69,Q ],[69,H ],
+];
+
+// ── Bass accompaniment ──
+const BASS = [
+  [52,H],[55,H],[53,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+  [52,H],[55,H],[53,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+
+  [50,H],[53,H],[52,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+  [50,H],[53,H],[52,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+
+  [52,H],[55,H],[53,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+  [52,H],[55,H],[53,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+
+  [50,H],[53,H],[52,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+  [50,H],[53,H],[52,H],[55,H],
+  [52,H],[55,H],[57,H],[55,H],
+];
+
+function scheduleNote(ctx, freq, t, dur, vol, wave) {
+  if (!freq) return; // rest
+  const osc  = ctx.createOscillator();
   const gain = ctx.createGain();
-  const filt = ctx.createBiquadFilter();
-  filt.type = 'lowpass'; filt.frequency.value = 2000;
-
-  osc.type = type;
+  const atk  = 0.01;
+  const rel  = Math.min(0.06, dur * 0.15);
+  osc.type = wave;
   osc.frequency.value = freq;
-
-  gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(volume, startTime + attack);
-  gain.gain.setValueAtTime(volume, startTime + duration - release);
-  gain.gain.linearRampToValueAtTime(0, startTime + duration);
-
-  osc.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
-  osc.start(startTime);
-  osc.stop(startTime + duration + 0.01);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(vol, t + atk);
+  gain.gain.setValueAtTime(vol, t + dur - rel);
+  gain.gain.linearRampToValueAtTime(0, t + dur);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + dur + 0.01);
 }
 
-function scheduleMelody(ctx, startTime) {
+function scheduleMusicLoop(ctx, startTime) {
   let t = startTime;
-  for (const [note, beats] of MELODY) {
-    const dur = beats * BEAT;
-    const freq = midiToHz(note);
-    // Lead: square wave for that classic Game Boy feel
-    scheduleNote(ctx, freq, t, dur * 0.88, 0.12, 'square', 0.01, 0.05);
-    // Harmonics layer (one octave below, softer)
-    scheduleNote(ctx, freq / 2, t, dur * 0.88, 0.04, 'triangle', 0.01, 0.08);
+  // Lead melody — square wave (Game Boy chiptune sound)
+  for (const [note, dur] of MELODY) {
+    if (note > 0) {
+      scheduleNote(ctx, hz(note), t, dur * 0.85, 0.13, 'square');
+      // Subtle harmony one octave down
+      scheduleNote(ctx, hz(note) / 2, t, dur * 0.85, 0.04, 'triangle');
+    }
     t += dur;
   }
-  return t; // end time
-}
+  const loopDuration = MELODY.reduce((s,[,d]) => s + d, 0);
 
-function scheduleBass(ctx, startTime) {
-  let t = startTime;
-  for (const [note, beats] of BASS) {
-    const dur = beats * BEAT;
-    const freq = midiToHz(note);
-    scheduleNote(ctx, freq, t, dur * 0.7, 0.09, 'triangle', 0.02, 0.1);
-    t += dur;
+  // Bass line — triangle wave
+  let tb = startTime;
+  for (const [note, dur] of BASS) {
+    scheduleNote(ctx, hz(note), tb, dur * 0.6, 0.1, 'triangle');
+    tb += dur;
   }
-  return t;
-}
 
-function scheduleKick(ctx, startTime, totalBeats) {
-  // Simple kick on beats 1 and 3
-  for (let b = 0; b < totalBeats; b += 2) {
-    const t = startTime + b * BEAT;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(120, t);
-    osc.frequency.exponentialRampToValueAtTime(40, t + 0.12);
-    gain.gain.setValueAtTime(0.22, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.start(t); osc.stop(t + 0.25);
+  // Kick drum on every beat
+  for (let b = 0; b < loopDuration; b += Q) {
+    const kt = startTime + b;
+    const ko = ctx.createOscillator();
+    const kg = ctx.createGain();
+    ko.type = 'sine';
+    ko.frequency.setValueAtTime(120, kt);
+    ko.frequency.exponentialRampToValueAtTime(40, kt + 0.1);
+    kg.gain.setValueAtTime(0.18, kt);
+    kg.gain.exponentialRampToValueAtTime(0.001, kt + 0.18);
+    ko.connect(kg); kg.connect(ctx.destination);
+    ko.start(kt); ko.stop(kt + 0.2);
   }
-}
 
-function scheduleHihat(ctx, startTime, totalBeats) {
-  for (let b = 0; b < totalBeats; b += 0.5) {
-    const t = startTime + b * BEAT;
-    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/d.length, 3);
-    const src = ctx.createBufferSource();
-    const filt = ctx.createBiquadFilter();
-    const gain = ctx.createGain();
-    src.buffer = buf;
-    filt.type = 'highpass'; filt.frequency.value = 8000;
-    gain.gain.value = (b % 1 === 0) ? 0.06 : 0.03;
-    src.connect(filt); filt.connect(gain); gain.connect(ctx.destination);
-    src.start(t);
-  }
+  return loopDuration;
 }
 
 function startMusicLoop() {
   if (!musicPlaying || !soundEnabled) return;
   const ctx = getACtx();
+  if (ctx.state === 'suspended') ctx.resume();
   const now = ctx.currentTime + 0.05;
-
-  const melodyDuration = MELODY.reduce((s, [, b]) => s + b, 0) * BEAT;
-  const totalBeats = MELODY.reduce((s, [, b]) => s + b, 0);
-
-  scheduleMelody(ctx, now);
-  scheduleBass(ctx, now);
-  scheduleKick(ctx, now, totalBeats);
-  scheduleHihat(ctx, now, totalBeats);
-
-  // Schedule next loop slightly before end
+  const loopDur = scheduleMusicLoop(ctx, now);
   musicScheduler = setTimeout(() => {
     if (musicPlaying && soundEnabled) startMusicLoop();
-  }, (melodyDuration - 0.3) * 1000);
+  }, (loopDur - 0.2) * 1000);
 }
 
 function startMusic() {
-  if (musicPlaying || !soundEnabled) return;
-  if (audioCtx) audioCtx.resume();
+  if (musicPlaying) return;
+  const ctx = getACtx();
+  if (ctx.state === 'suspended') ctx.resume();
   musicPlaying = true;
   startMusicLoop();
 }
@@ -1220,9 +1209,7 @@ function startMusic() {
 function stopMusic() {
   musicPlaying = false;
   if (musicScheduler) { clearTimeout(musicScheduler); musicScheduler = null; }
-  if (audioCtx) audioCtx.suspend();
 }
-
 // SFX
 function playPlaceSound() {
   if (!soundEnabled) return;
